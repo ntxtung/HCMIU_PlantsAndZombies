@@ -1,13 +1,22 @@
 package gui;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.io.File;
+import java.io.IOException;
+
+import org.ini4j.Ini;
+import org.ini4j.InvalidFileFormatException;
 import org.newdawn.slick.*;
+import org.newdawn.slick.openal.SoundStore;
 import org.newdawn.slick.state.*;
 
 public class PZGUI extends StateBasedGame {
-	
-	public static final boolean showFPS = true;
+	public static int width 	= 1366;
+	public static int height 	= 768;
+	public static int targetFPS = 65;
+	public static boolean showFPS 	 = true;
+	public static boolean fullScreen = false;
+	public static boolean vSync 	 = true;
+	public static boolean AA		 = true;
 	
 	public static final String gameName = "TNT Plants Vs. Zombies HCMIU";
 	public static final int splashScreen = 0;
@@ -15,33 +24,63 @@ public class PZGUI extends StateBasedGame {
 	public static final int play = 2;
 	public static final int gameOver = 3;
 	
-	public PZGUI() {
+	public PZGUI(String gameName) {
 		super(gameName);
+		try {
+			Ini ini = new Ini(new File("config.ini"));
+			width      = Integer.parseInt	  (ini.get("DISPLAY", "width"	  ));
+			height     = Integer.parseInt	  (ini.get("DISPLAY", "height"	  ));
+			targetFPS  = Integer.parseInt	  (ini.get("DISPLAY", "targetFPS" ));
+			showFPS    = Boolean.parseBoolean (ini.get("DISPLAY", "showFPS"	  ));
+			fullScreen = Boolean.parseBoolean (ini.get("DISPLAY", "fullScreen"));
+			vSync      = Boolean.parseBoolean (ini.get("DISPLAY", "vSync"	  ));
+			vSync      = Boolean.parseBoolean (ini.get("DISPLAY", "AA"	  ));
+			
+		} catch (InvalidFileFormatException e) {
+			e.printStackTrace();
+			this.loadDefaultSettings();
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+			this.loadDefaultSettings();
+		}
 		this.addState(new SplashScreen(splashScreen));
 		this.addState(new Menu(menu));
 		this.addState(new Play(play));
 		this.addState(new GameOver(gameOver));
 	}
 	
-	public void initStatesList(GameContainer gc) throws SlickException {
-		gc.setShowFPS(showFPS);
-		this.getState(splashScreen).init(gc, this);
-		this.getState(menu).		init(gc, this);
-		this.getState(play).		init(gc, this);
-		this.getState(gameOver).	init(gc, this);
-		this.enterState(splashScreen); // show SplashScreen first
+	private void loadDefaultSettings() {
+		width      = 800;
+		height     = 600;
+		targetFPS  = 1000;
+		showFPS    = true;
+		fullScreen = false;
+		vSync      = false;
+		AA         = true;
 	}
 	
-	public static void changeState(int state) {
-		
+	public void initStatesList(GameContainer gc) throws SlickException {
+		//this.getState(splashScreen).init(gc, this);
+		//this.getState(menu).		init(gc, this);
+		//this.getState(play).		init(gc, this);
+		//this.getState(gameOver).	init(gc, this);
+		this.enterState(splashScreen); // show SplashScreen first	
 	}
 	
 	public static void main(String[] args){
 		AppGameContainer appgc;
 		try {
-			appgc = new AppGameContainer(new PZGUI());
-			appgc.setDisplayMode(1366, 768, true);
-			appgc.start();
+			appgc = new AppGameContainer(new PZGUI(gameName));
+			
+			appgc.setShowFPS(showFPS);
+			appgc.setDisplayMode(width, height, fullScreen);
+			appgc.setTargetFrameRate(targetFPS);
+			appgc.setVSync(vSync);
+			appgc.setSmoothDeltas(true);
+			appgc.setAlwaysRender(true);
+			
+			appgc.start(); //Begin thread game
 		} 
 		catch(SlickException e) {
 			e.printStackTrace();
