@@ -6,35 +6,55 @@ import java.io.IOException;
 import org.ini4j.Ini;
 import org.ini4j.InvalidFileFormatException;
 import org.newdawn.slick.*;
-import org.newdawn.slick.openal.SoundStore;
 import org.newdawn.slick.state.*;
+import org.newdawn.slick.state.transition.*;
 
+/**
+ * 
+ * @author Nguyen Thanh Xuan Tung + Nguyen Phan Hung Thuan
+ *
+ */
 public class PZGUI extends StateBasedGame {
-	public static int width 	= 1366;
-	public static int height 	= 768;
-	public static int targetFPS = 65;
-	public static boolean showFPS 	 = true;
-	public static boolean fullScreen = false;
-	public static boolean vSync 	 = true;
-	public static boolean AA		 = true;
 	
-	public static final String gameName = "TNT Plants Vs. Zombies HCMIU";
-	public static final int splashScreen = 0;
-	public static final int menu = 1;
-	public static final int play = 2;
-	public static final int gameOver = 3;
+	private static int width 	= 1600; 	
+	private static int height 	= 900;
 	
+//	public static int width		= 800;  	public static int height	= 450;
+	
+	private static int 	   targetFPS = 65;
+	private static boolean showFPS 	 = true;
+	private static boolean fullScreen = false;
+	private static boolean vSync 	 = true;
+	private static boolean AA		 = true;
+	
+	private static final String gameName = "TNT Plants Vs. Zombies HCMIU";
+	private static final int splashScreen = 0;
+	private static final int menu = 1;
+	private static final int play = 2;
+	@SuppressWarnings("unused")
+	private static final int gameOver = 3;
+	
+	private static float resolutionRateWidth;
+	private static float resolutionRateHeight;
+	
+	private static int defaultWidth = 1600;
+	private static int defaultHeight = 900;
+	
+	/**
+	 * INITIALIZE GAME WITH DEFAULT NAME
+	 * @param gameName	Game title
+	 */
 	public PZGUI(String gameName) {
 		super(gameName);
 		try {
 			Ini ini = new Ini(new File("config.ini"));
-			width      = Integer.parseInt	  (ini.get("DISPLAY", "width"	  ));
-			height     = Integer.parseInt	  (ini.get("DISPLAY", "height"	  ));
+//			width      = Integer.parseInt	  (ini.get("DISPLAY", "width"	  ));
+//			height     = Integer.parseInt	  (ini.get("DISPLAY", "height"	  ));
 			targetFPS  = Integer.parseInt	  (ini.get("DISPLAY", "targetFPS" ));
 			showFPS    = Boolean.parseBoolean (ini.get("DISPLAY", "showFPS"	  ));
 			fullScreen = Boolean.parseBoolean (ini.get("DISPLAY", "fullScreen"));
 			vSync      = Boolean.parseBoolean (ini.get("DISPLAY", "vSync"	  ));
-			vSync      = Boolean.parseBoolean (ini.get("DISPLAY", "AA"	  ));
+			AA         = Boolean.parseBoolean (ini.get("DISPLAY", "AA"	  ));
 			
 		} catch (InvalidFileFormatException e) {
 			e.printStackTrace();
@@ -50,35 +70,57 @@ public class PZGUI extends StateBasedGame {
 		this.addState(new GameOver(gameOver));
 	}
 	
+	/**
+	 * Load default settings for game
+	 * targetFPS=60
+	 * showFPS=true
+	 * fullScreeen=false
+	 * vSync=true
+	 * AA=true
+	 */
 	private void loadDefaultSettings() {
-		width      = 800;
-		height     = 600;
-		targetFPS  = 1000;
+		width      = defaultWidth;
+		height     = defaultWidth;
+		targetFPS  = 60;
 		showFPS    = true;
 		fullScreen = false;
-		vSync      = false;
+		vSync      = true;
 		AA         = true;
 	}
 	
+	/**
+	 * Initialize game State
+	 */
 	public void initStatesList(GameContainer gc) throws SlickException {
 		//this.getState(splashScreen).init(gc, this);
-		//this.getState(menu).		init(gc, this);
-		//this.getState(play).		init(gc, this);
-		//this.getState(gameOver).	init(gc, this);
-		this.enterState(splashScreen); // show SplashScreen first	
+		//this.getState(menu).		  init(gc, this);
+		//this.getState(play).		  init(gc, this);
+		//this.getState(gameOver).	  init(gc, this);
+		this.enterState(splashScreen, new FadeInTransition(), new EmptyTransition()); // show SplashScreen first	
 	}
 	
+	/**
+	 * Main process
+	 * @param args Arguments
+	 */
 	public static void main(String[] args){
 		AppGameContainer appgc;
 		try {
-			appgc = new AppGameContainer(new PZGUI(gameName));
-			
+			appgc = new AppGameContainer(new PZGUI(gameName));	
 			appgc.setShowFPS(showFPS);
+			
+			if (fullScreen == true){
+				width = appgc.getScreenWidth();
+				height  = appgc.getScreenHeight();
+			}			
 			appgc.setDisplayMode(width, height, fullScreen);
+			appgc.setUpdateOnlyWhenVisible(true);
 			appgc.setTargetFrameRate(targetFPS);
 			appgc.setVSync(vSync);
 			appgc.setSmoothDeltas(true);
-			appgc.setAlwaysRender(true);
+			appgc.setAlwaysRender(true);					
+			resolutionRateHeight = (float)appgc.getHeight() / (float)defaultHeight;
+			resolutionRateWidth  = (float)appgc.getWidth() / (float)defaultWidth;
 			
 			appgc.start(); //Begin thread game
 		} 
@@ -87,4 +129,20 @@ public class PZGUI extends StateBasedGame {
 		}
 	}
 
+	/**
+	 * Anti-Alias
+ 	 * @return AA
+	 */
+	public static boolean isAA() 					{return AA;}
+	public static void 	  setAA(boolean aA) 		{AA = aA;}
+
+	public static int 	  getWidth() 				{return width;}
+	public static void 	  setWidth(int width) 		{PZGUI.width = width;}
+
+	public static int 	  getHeight() 				{return height;}
+	public static void    setHeight(int height)     {PZGUI.height = height;}
+
+	public static float   getResolutionRateWidth()  {return resolutionRateWidth;}
+	public static float   getResolutionRateHeight() {return resolutionRateHeight;}
+	
 }
